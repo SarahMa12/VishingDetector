@@ -27,3 +27,14 @@ SAMPLE_RATE = 16000
 # so all clips give features of the same size.
 CLIP_SECONDS = 4
 CLIP_SAMPLES = SAMPLE_RATE * CLIP_SECONDS  # 64,000
+
+# Silence at the start and end of a clip is cut off. Anything more than this
+# many dB quieter than the loudest part counts as silence. (The leading
+# silence differs between real and fake clips, so it would give the label away.)
+TRIM_TOP_DB = 30
+
+# Feature settings
+N_MFCC = 20
+N_LFCC = 20
+N_MELS = 80
+HOP_LENGTH = 512  # samples between frames; every frame-based feature uses it

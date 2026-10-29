@@ -12,10 +12,13 @@ VishingDetector/
   features/               saved features (ignored by git)
   notebooks/
     01_eda.ipynb          exploring the 2019 LA train and dev data
+    02_feature_checks.ipynb  comparing real and fake on the extracted features
   src/
     config.py             paths and audio settings
-    data.py               reads label files and finds audio paths
+    data.py               reads label files, loads and trims clips
     download_data.py      downloads the datasets from Kaggle into data/
+    features.py           feature functions (MFCC, LFCC, log-mel, CQT, pitch, ...)
+    extract.py            batched, restartable feature extraction into features/
   data_paths.json         where each dataset was saved (ignored by git)
   requirements.txt        pinned Python dependencies
 ```

@@ -1,4 +1,4 @@
-"""Helpers for finding ASVspoof files and reading their labels.
+"""Helpers for finding ASVspoof files, reading their labels, and loading clips.
 
 Always load clips from the label files, not from a folder listing:
 the 2019 dev and eval folders contain extra clips that have no label.
@@ -7,9 +7,12 @@ the 2019 dev and eval folders contain extra clips that have no label.
 import json
 from pathlib import Path
 
+import librosa
+import numpy as np
 import pandas as pd
+import soundfile as sf
 
-from config import DATA_PATHS_FILE
+from config import CLIP_SECONDS, DATA_PATHS_FILE, FEATURES_DIR, SAMPLE_RATE, TRIM_TOP_DB
 
 # 2019 LA split -> (folder name, label file name)
 _LA_2019 = {
@@ -45,3 +48,35 @@ def load_la_2019(split):
     df = pd.DataFrame(rows, columns=["speaker", "file", "system", "label"])
     df["path"] = [str(root / folder / "flac" / f"{n}.flac") for n in df["file"]]
     return df
+
+
+def load_clip(path, seconds=CLIP_SECONDS):
+    """Read one clip, trim the silence at both ends, then fit it to `seconds`.
+
+    Clips shorter than `seconds` are repeated, longer ones are cut. Every
+    feature, notebook and test set must load clips through this function,
+    so the trimming rule is the same everywhere.
+
+    Returns a float32 array of seconds * SAMPLE_RATE samples.
+    """
+    y, sr = sf.read(path, dtype="float32")
+    assert sr == SAMPLE_RATE, f"{path} is {sr} Hz, expected {SAMPLE_RATE}"
+    y, _ = librosa.effects.trim(y, top_db=TRIM_TOP_DB)
+    return np.resize(y, int(seconds * SAMPLE_RATE))
+
+
+def load_features(feature, split, seconds=CLIP_SECONDS):
+    """Join the saved batches of one feature for one 2019 LA split.
+
+    Returns (x, labels). `x` has one row per clip (float32), in the same
+    order as `labels`, the table from load_la_2019. Stops if the saved
+    clip names do not match the label file.
+    """
+    folder = FEATURES_DIR / f"{seconds:g}s" / split / feature
+    batches = [np.load(f) for f in sorted(folder.glob("batch_?????.npz"))]
+    x = np.concatenate([b["x"] for b in batches]).astype(np.float32)
+    files = np.concatenate([b["files"] for b in batches])
+
+    labels = load_la_2019(split)
+    assert np.array_equal(files, labels["file"].to_numpy()), f"{folder}: clips do not match the label file"
+    return x, labels
