@@ -1,9 +1,20 @@
 """Extract features from 2019 LA clips and save them to ./features.
 
-Usage (from the project root):
-    python src/extract.py --split train --feature all
+Usage (from the project root). Run it once for each set:
+    python src/extract.py --split train
+    python src/extract.py --split dev
+
+By default this extracts every feature from 4 s clips. Options:
+    --feature NAME   only one feature: mfcc, lfcc, logmel, cqt, spectral, pitch,
+                     jitter_shimmer or noise (default: all)
+    --seconds N      clip length after trimming (default: CLIP_SECONDS in config.py)
+    --workers N      number of processes (default: CPU count minus 2)
+    --limit N        only use N random clips, as a quick test. These are saved
+                     apart from the full set, in a folder named <split>_nN
+
+Examples:
     python src/extract.py --split dev --feature mfcc --seconds 3
-    python src/extract.py --split train --limit 100      # quick test on 100 random clips
+    python src/extract.py --split train --limit 100
 
 Output: features/<seconds>s/<split>/<feature>/batch_00000.npz, ...
 Each file holds `x` (the features, one row per clip) and `files` (clip names).
