@@ -13,6 +13,7 @@ VishingDetector/
   notebooks/
     01_eda.ipynb          exploring the 2019 LA train and dev data
     02_feature_checks.ipynb  comparing real and fake on the extracted features
+    03_feature_extraction.ipynb  ranking handcrafted features
   src/
     config.py             paths and audio settings
     data.py               reads label files, loads and trims clips
